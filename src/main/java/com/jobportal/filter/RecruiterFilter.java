@@ -1,0 +1,46 @@
+package com.jobportal.filter;
+
+import java.io.IOException;
+
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+import com.jobportal.model.User;
+
+@WebFilter("/recruiter/*")
+public class RecruiterFilter implements Filter 
+{
+
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException 
+    {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
+
+        HttpSession session = req.getSession(false);
+
+        if (session == null) {
+            res.sendRedirect(req.getContextPath() + "/auth/login.jsp");
+            return;
+        }
+
+        User user = (User) session.getAttribute("user");
+
+        if (user != null && "RECRUITER".equals(user.getRole())) 
+        {
+            chain.doFilter(request, response);
+        }
+        else
+        {
+            res.sendRedirect(req.getContextPath() + "/auth/login.jsp");
+        }
+    }
+}
